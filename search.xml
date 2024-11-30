@@ -4,11 +4,61 @@
   
     
     <entry>
+      <title>SHCTF2024 WriteUp</title>
+      <link href="/2024/11/30/SHCTF2024-WP/"/>
+      <url>/2024/11/30/SHCTF2024-WP/</url>
+      
+        <content type="html"><![CDATA[<h1 id="Web"><a href="#Web" class="headerlink" title="Web"></a>Web</h1><h2 id="Week-1"><a href="#Week-1" class="headerlink" title="Week 1"></a>Week 1</h2><h3 id="1-1zflask"><a href="#1-1zflask" class="headerlink" title="1. 1zflask"></a>1. 1zflask</h3><h4 id="解题思路："><a href="#解题思路：" class="headerlink" title="解题思路："></a>解题思路：</h4><p>首先打开容器发现出现404网页，刚开始很懵，后来明白了原来是出题人没做主页<del>nishen太懒</del>。根据题目描述，<br>我们访问robots.txt，发现一个&#x2F;s3recttt路由，访问下载源码如下：</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> flask</span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, request,  send_from_directory, send</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/api&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">api</span>():</span><br><span class="line">    cmd = request.args.get(<span class="string">&#x27;SSHCTFF&#x27;</span>, <span class="string">&#x27;ls /&#x27;</span>)</span><br><span class="line">    result = os.popen(cmd).read()</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/robots.txt&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">static_from_root</span>():</span><br><span class="line">    <span class="keyword">return</span> send_from_directory(app.static_folder,<span class="string">&#x27;robots.txt&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/s3recttt&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_source</span>():</span><br><span class="line">    dile_path = <span class="string">&quot;app.py&quot;</span></span><br><span class="line">    <span class="keyword">return</span> send_file(file_path, as_attachment=true)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ ==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(debug-<span class="literal">True</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure><p>我们可以看到&#x2F;api路由，默认传参SSHCTFF&#x3D;ls &#x2F;,执行结果通过os.open读取,访问该路由则会列出:</p><img src="/img/SH_1zflask1.png" width="50%" /><p>我们把参数值改一下变成SSHCTFF&#x3D;cat &#x2F;flag就能成功得到flag了。</p><img src="/img/SH_1zflask2.png" width="" /><h3 id="2-ez-gittt"><a href="#2-ez-gittt" class="headerlink" title="2. ez_gittt"></a>2. ez_gittt</h3><h4 id="解题思路：-1"><a href="#解题思路：-1" class="headerlink" title="解题思路："></a>解题思路：</h4><p>开启题目查看源码看到注释里有“你说这个Rxuxin会不会喜欢把自己的秘密写到git之类什么的”，可能存在git泄露，拿dirsearch扫一下确实存在，再用GitHack克隆目录，然后使用cd命令进入dist文件中新生成的文件，再使用git log命令查看历史提交记录，如下</p><img src="/img/git1.png" width="50%" /><img src="/img/git2.png" width="50%" /><h3 id="3-jvav"><a href="#3-jvav" class="headerlink" title="3.jvav"></a>3.jvav</h3><h4 id="解题思路：-2"><a href="#解题思路：-2" class="headerlink" title="解题思路："></a>解题思路：</h4><p>开启题目发现如图输入框，而且可以执行</p><img src="/img/jvav1.png" width="50%" /><p>再根据题目描述“如果你已经会用java写hello world了，那么可以试试java怎么执行system command”，题目意思很明确，我们只需要用java写实现命令执行的代码就行了，不会写直接AI一把梭就行了，需要注意的是我们定义的类需要是demo（public class demo），然后按部就班ls &#x2F;再cat &#x2F;flag就行了。flag： SHCTF{1cd97424-7553-4571-a6cc-c9d7a2cc8237}</p><h3 id="4-蛐蛐？-蛐蛐！"><a href="#4-蛐蛐？-蛐蛐！" class="headerlink" title="4. 蛐蛐？ 蛐蛐！"></a>4. 蛐蛐？ 蛐蛐！</h3><h4 id="解题思路：-3"><a href="#解题思路：-3" class="headerlink" title="解题思路："></a>解题思路：</h4><p>首先查看源码发现有个重要的source.txt，访问一下得到如下代码：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;ququ&#x27;</span>] == <span class="number">114514</span> &amp;&amp; <span class="title function_ invoke__">strrev</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;ququ&#x27;</span>])!= <span class="number">415411</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;ququ&#x27;</span>]!=<span class="literal">null</span>)&#123;</span><br><span class="line">        <span class="variable">$eval_param</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;ququ&#x27;</span>];</span><br><span class="line">        <span class="keyword">if</span>(<span class="title function_ invoke__">strncmp</span>(<span class="variable">$eval_param</span>,<span class="string">&#x27;ququk1&#x27;</span>,<span class="number">6</span>)===<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">eval</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;ququ&#x27;</span>]);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">echo</span>(<span class="string">&quot;不知道为啥变乱码了&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_ invoke__">ehco</span>(<span class="string">&quot;不知道为啥变乱码了&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">echo</span>(<span class="string">&quot;不知道为啥变乱码了&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure><p>第一个条件get传参ququ&#x3D;114514，但其反转字符串不等于415411，ququ&#x3D;114514a就能绕过，然后post传参，并且当前六个字段是ququk1时，eval函数会将ququ的值作为php代码执行（注意代码闭合不要漏了;），简单的rce，直接常规ls 和cat得到flag。</p><h3 id="5-单身十八年的手速"><a href="#5-单身十八年的手速" class="headerlink" title="5.单身十八年的手速"></a>5.单身十八年的手速</h3><h4 id="解题思路：-4"><a href="#解题思路：-4" class="headerlink" title="解题思路："></a>解题思路：</h4><p>点击就送flag（偷个懒）。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> CTF </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Web </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>欢迎来到我的博客！</title>
+      <link href="/2024/11/30/%E6%AC%A2%E8%BF%8E%E6%9D%A5%E5%88%B0%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2%EF%BC%81/"/>
+      <url>/2024/11/30/%E6%AC%A2%E8%BF%8E%E6%9D%A5%E5%88%B0%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2%EF%BC%81/</url>
+      
+        <content type="html"><![CDATA[<h1 id="欢迎来到我的博客！！！"><a href="#欢迎来到我的博客！！！" class="headerlink" title="欢迎来到我的博客！！！"></a>欢迎来到我的博客！！！</h1><p>这里是 Q3q_c1n 的个人博客。</p><p>本页主要发布更新日志，想了解我多一点点请<del>看VCR</del>到关于页面瞅瞅。</p><hr><h2 id="Log"><a href="#Log" class="headerlink" title="Log"></a>Log</h2><div class="timeline blue"><div class='timeline-item headline'><div class='timeline-item-title'><div class='item-circle'></div></div></div><div class='timeline-item'><div class='timeline-item-title'><div class='item-circle'><p><strong>2024-11-30 13:52:00</strong></p></div></div><div class='timeline-item-content'><p><strong>历时<del>两年（）</del>应该两三天吧，哈哈我宣布我的个人博客正式启动！！！</strong></p><p><font size = 5 color=red>那不是黑历史，是我的来时路</font></p><p>因为本人有点强迫症，一准备搭博客就想一次性搞好，所以也就没有一步一步的更新日志。<br>下面统一说明：</p><ol><li>本站以Hexo为框架，Butterfly为主题搭建的，找了一些教程魔改了以下，现在看起来还是美观很多的。</li><li>由于魔改已经进行了大半，就不一一列举了，后面有改动的话再写进该日志里。</li><li>目前还有一些功能没实现，清单中的音乐、照片、电影和友链目前没哈用，留言板我也不知道有没有用，至少是有东西的。</li><li>感觉文章内的字体还是有点小，后面有时间载改进吧。</li><li>图片都是朋友给的，不过还不太够用，愿意提供的可以联系我。  </li><li>在网上找了一堆教程，从0到有的这几天的天真的很黑~</li></ol></div></div><div class='timeline-item'><div class='timeline-item-title'><div class='item-circle'><p><strong>2024-11-30 16:04:00</strong></p></div></div><div class='timeline-item-content'><p>目前只把SHCTF2024 week1 的wp写上去了，之前的wp到底怎么打包copy过来啊，重写累似了，以后wp直接写这了…<br>其他的wp后续有空再补上吧。</p></div></div></div>]]></content>
+      
+      
+      <categories>
+          
+          <category> 更新日志 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 建站 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>java</title>
       <link href="/2024/11/30/java/"/>
       <url>/2024/11/30/java/</url>
       
-        <content type="html"><![CDATA[<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyFirstJavaProgram</span> &#123;</span><br><span class="line">   <span class="comment">/* 第一个Java程序.</span></span><br><span class="line"><span class="comment">    * 他将打印字符串 Hello World</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String []args)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello Welcome to learn 加瓦炒粉&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+        <content type="html"><![CDATA[<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyFirstJavaProgram</span> &#123;</span><br><span class="line">   <span class="comment">/* 第一个Java程序.</span></span><br><span class="line"><span class="comment">    * 他将打印字符串 Hello World</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String []args)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello Welcome to learn 加瓦炒粉&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
       
       
       <categories>
@@ -20,7 +70,7 @@
       
         <tags>
             
-            <tag> 标签1 </tag>
+            <tag> 编程 </tag>
             
         </tags>
       
@@ -45,7 +95,7 @@
       
         <tags>
             
-            <tag> 标签2 </tag>
+            <tag> 搭建博客 </tag>
             
         </tags>
       
@@ -70,7 +120,7 @@
       
         <tags>
             
-            <tag> 标签1 </tag>
+            <tag> 搭建博客 </tag>
             
         </tags>
       
